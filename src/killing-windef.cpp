@@ -76,7 +76,7 @@ void executeShellCommands()
     cout << command << endl;
     cout << endl;
     system("powershell -ExecutionPolicy Bypass -F temp.ps1");
-    remove("temp.ps1");
+    remove(lpFileName);
 }
 
 int main()
