@@ -33,9 +33,55 @@ using namespace std;
     );
 */
 
-void advertisingID()
+void advertisingInfo()
 {
-    cout << "Stop the applications from using the Ad ID..." << endl;
+    cout << "Stop collecting advertising info..." << endl;
+
+    LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo";
+    HKEY hKey;
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_CURRENT_USER,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating the key failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    LPCSTR lpValueName = "Enabled";
+    DWORD dwData = 0;
+
+    lstatus = RegSetKeyValueA(
+        hKey,
+        NULL,
+        lpValueName,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    RegCloseKey(hKey);
+}
+
+void writingInfo()
+{
+    cout << "Stop sending inking and typing info to Microsoft..." << endl;
 
     LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Input\\TIPC";
     HKEY hKey;
@@ -181,11 +227,11 @@ int main(int argc, char *argv[])
 {
     cout << "Fixing the registry to improve privacy" << endl;
     cout << endl;
-    cout << endl;
 
     langOptOut();
     locationPrinting();
-    advertisingID();
+    writingInfo();
+    advertisingInfo();
 
     cout << "Done and Done" << endl;
     return 0;
