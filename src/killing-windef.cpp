@@ -4,6 +4,64 @@
 
 using namespace std;
 
+void disableAntiSpyware()
+{
+    cout << "Disabling anti-spyware..." << endl;
+
+    LPCSTR lpSubKey = "SOFTWARE\\Wow6432Node\\Policies\\Microsoft\\Windows Defender";
+    HKEY hKey;
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_LOCAL_MACHINE,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating key failed and exited with an error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    LPCSTR lpValueName = "DisableAntiSpyware";
+    DWORD dwData = 1;
+
+    lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the key failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    RegCloseKey(hKey);
+}
+
+void disableWindowsDefenderGP()
+{
+    cout << "Disabling Windows Defender..." << endl;
+    cout << endl;
+
+    disableAntiSpyware();
+
+    cout << endl;
+    cout << "Disabled Windows Defender with Group Policies" << endl;
+}
+
+
 void executeShellCommands()
 {
     string tasks[] = {"\\Microsoft\\Windows\\Windows Defender\\Windows Defender Cache Maintenance",
@@ -13,7 +71,7 @@ void executeShellCommands()
     int size = sizeof(tasks)/sizeof(tasks[0]);
     string command;
 
-    for ( int i=0; i<size ; i++)
+    for ( int i=0; i<size ; i++ )
     {
         string delimiter = "\\";
         string task;
@@ -85,5 +143,7 @@ int main()
     cout << endl;
 
     executeShellCommands();
+    disableWindowsDefenderGP();
+
     return 0;
 }
