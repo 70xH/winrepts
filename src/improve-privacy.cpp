@@ -33,6 +33,71 @@ using namespace std;
     );
 */
 
+void disableDifferentGroups()
+{
+    cout << "Disable different groups sync settings..." << endl;
+
+    string groups[] = {
+        "Accessibility",
+        "AppSync",
+        "BrowserSettings",
+        "Credentials",
+        "DesktopTheme",
+        "Language",
+        "PackageState",
+        "Personalization",
+        "StartLayout",
+        "Windows"
+    };
+
+    int size = sizeof(groups)/sizeof(groups[0]);
+
+    for(int i=0; i<size; i++)
+    {
+        HKEY hKey;
+        string strKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\SettingSync\\Groups\\" + groups[i];
+        LPCSTR lpSubKey = strKey.c_str();
+
+        long lstatus = RegCreateKeyExA(
+            HKEY_CURRENT_USER,
+            lpSubKey,
+            0,
+            NULL,
+            REG_OPTION_NON_VOLATILE,
+            KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+            NULL,
+            &hKey,
+            NULL
+        );
+
+        if ( lstatus != ERROR_SUCCESS )
+        {
+            cout << "Creating the key failed and exited with error code: " << GetLastError() << endl;
+            exit(0);
+        }
+
+        LPCSTR lpValueName = "Enabled";
+        DWORD dwData = 0;
+
+        lstatus = RegSetValueExA(
+            hKey,
+            lpValueName,
+            0,
+            REG_DWORD,
+            (LPBYTE)&dwData,
+            sizeof(dwData)
+        );
+
+        if ( lstatus != ERROR_SUCCESS )
+        {
+            cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+            exit(0);
+        }
+
+        RegCloseKey(hKey);
+    }
+}
+
 HKEY priorLogons(HKEY hKey)
 {
     cout << "Setting prior logons..." << endl;
@@ -138,8 +203,9 @@ void disableSync()
     hKey = disableBackupPolicy(hKey);
     hKey = disableDMUpload(hKey);
     hKey = priorLogons(hKey);
-
     RegCloseKey(hKey);
+
+    disableDifferentGroups();
 }
 
 void turnOffSmartFilter()
