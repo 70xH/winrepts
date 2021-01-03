@@ -33,6 +33,56 @@ using namespace std;
     );
 */
 
+HKEY priorLogons(HKEY hKey)
+{
+    cout << "Setting prior logons..." << endl;
+
+    LPCSTR lpValueName = "PriorLogons";
+    DWORD dwData = 1;
+
+    long lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    return hKey;
+}
+
+HKEY disableDMUpload(HKEY hKey)
+{
+    cout << "Disabling device metadata upload..." << endl;
+
+    LPCSTR lpValueName = "DeviceMetadataUpload";
+    DWORD dwData = 0;
+
+    long lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    return hKey;
+}
+
 HKEY disableBackupPolicy(HKEY hKey)
 {
     cout << "Disabling backup policy..." << endl;
@@ -57,6 +107,24 @@ HKEY disableBackupPolicy(HKEY hKey)
         exit(0);
     }
 
+    LPCSTR lpValueName = "BackupPolicy";
+    DWORD dwData = 0x3c;
+
+    lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
     return hKey;
 }
 
@@ -68,6 +136,8 @@ void disableSync()
     HKEY hKey;
 
     hKey = disableBackupPolicy(hKey);
+    hKey = disableDMUpload(hKey);
+    hKey = priorLogons(hKey);
 
     RegCloseKey(hKey);
 }
@@ -322,6 +392,7 @@ int main(int argc, char *argv[])
     cout << endl;
     disableSync();
 
+    cout << endl;
     cout << "Done and Done" << endl;
     return 0;
 }
