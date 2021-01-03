@@ -33,6 +33,91 @@ using namespace std;
     );
 */
 
+HKEY disableBackupPolicy(HKEY hKey)
+{
+    cout << "Disabling backup policy..." << endl;
+
+    LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\SettingSync";
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_CURRENT_USER,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating the key failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    return hKey;
+}
+
+void disableSync()
+{
+    cout << "Disable synchronisation settings" << endl;
+    cout << endl;
+
+    HKEY hKey;
+
+    hKey = disableBackupPolicy(hKey);
+
+    RegCloseKey(hKey);
+}
+
+void turnOffSmartFilter()
+{
+    cout << "Turning of web content smart filter..." << endl;
+
+    LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\AppHost";
+    HKEY hKey;
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_CURRENT_USER,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating the key failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    LPCSTR lpValueName = "EnableWebContentEvaluation";
+    DWORD dwData = 0;
+
+    lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    RegCloseKey(hKey);
+}
+
 void advertisingInfo()
 {
     cout << "Stop collecting advertising info..." << endl;
@@ -232,6 +317,10 @@ int main(int argc, char *argv[])
     locationPrinting();
     writingInfo();
     advertisingInfo();
+    turnOffSmartFilter();
+
+    cout << endl;
+    disableSync();
 
     cout << "Done and Done" << endl;
     return 0;
