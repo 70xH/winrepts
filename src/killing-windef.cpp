@@ -4,12 +4,82 @@
 
 using namespace std;
 
-void disableAntiSpyware()
+void disableRealTimeProtection()
+{
+    cout << "Disabling real time protection..." << endl;
+
+    HKEY hKey;
+    LPCSTR lpSubKey = "SOFTWARE\\Wow6432Node\\Policies\\Microsoft\\Windows Defender\\Real-TIme Protection";
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_LOCAL_MACHINE,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating the key failed and exited with an error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    LPCSTR lpValueName = "DisableRealTimeMonitoring";
+    DWORD dwData = 1;
+
+    lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    RegCloseKey(hKey);
+}
+
+HKEY DisableRoutinelyTakingAction(HKEY hKey)
+{
+    cout << "Diabling routing action..." << endl;
+
+    LPCSTR lpValueName = "DisableRoutinelyTakingAction";
+    DWORD dwData = 1;
+
+    long lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the value failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    return hKey;
+}
+
+HKEY disableAntiSpyware(HKEY hKey)
 {
     cout << "Disabling anti-spyware..." << endl;
 
     LPCSTR lpSubKey = "SOFTWARE\\Wow6432Node\\Policies\\Microsoft\\Windows Defender";
-    HKEY hKey;
 
     long lstatus = RegCreateKeyExA(
         HKEY_LOCAL_MACHINE,
@@ -47,15 +117,20 @@ void disableAntiSpyware()
         exit(0);
     }
 
-    RegCloseKey(hKey);
+    return hKey;
 }
 
 void disableWindowsDefenderGP()
 {
     cout << "Disabling Windows Defender..." << endl;
-    cout << endl;
 
-    disableAntiSpyware();
+    HKEY hKey;
+
+    hKey = disableAntiSpyware(hKey);
+    hKey = DisableRoutinelyTakingAction(hKey);
+    RegCloseKey(hKey);
+
+    disableRealTimeProtection();
 
     cout << endl;
     cout << "Disabled Windows Defender with Group Policies" << endl;
