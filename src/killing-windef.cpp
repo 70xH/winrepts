@@ -4,6 +4,13 @@
 
 using namespace std;
 
+void disableWindowsDefenderServices()
+{
+    cout << "Disabling windows defender services..." << endl;
+    
+    cout << "Work in progress..." << endl;
+}
+
 void disableRealTimeProtection()
 {
     cout << "Disabling real time protection..." << endl;
@@ -134,6 +141,7 @@ void disableWindowsDefenderGP()
 
     cout << endl;
     cout << "Disabled Windows Defender with Group Policies" << endl;
+    cout << endl;
 }
 
 
@@ -219,6 +227,7 @@ int main()
 
     executeShellCommands();
     disableWindowsDefenderGP();
+    disableWindowsDefenderServices();
 
     return 0;
 }
