@@ -33,6 +33,52 @@ using namespace std;
     );
 */
 
+void disableSendSampleMS()
+{
+    cout << "Disable sending speech, inking and typing samples to MS..." << endl;
+
+    LPCSTR lpSubKey = "SOFTWARE\\Microsoft\\Personalizaion\\Settings";
+    HKEY hKey;
+
+    long lstatus = RegCreateKeyExA(
+        HKEY_CURRENT_USER,
+        lpSubKey,
+        0,
+        NULL,
+        REG_OPTION_NON_VOLATILE,
+        KEY_ALL_ACCESS | KEY_WOW64_64KEY,
+        NULL,
+        &hKey,
+        NULL
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Creating the key failed and exited with error code: " << GetLastError();
+        exit(0);
+    }
+
+    LPCSTR lpValueName = "AcceptedPrivacyPolicy";
+    DWORD dwData = 0;
+
+    lstatus = RegSetValueExA(
+        hKey,
+        lpValueName,
+        0,
+        REG_DWORD,
+        (LPBYTE)&dwData,
+        sizeof(dwData)
+    );
+
+    if ( lstatus != ERROR_SUCCESS )
+    {
+        cout << "Setting the key failed and exited with error code: " << GetLastError() << endl;
+        exit(0);
+    }
+
+    RegCloseKey(hKey);
+}
+
 void disableDifferentGroups()
 {
     cout << "Disable different groups sync settings..." << endl;
@@ -457,6 +503,9 @@ int main(int argc, char *argv[])
 
     cout << endl;
     disableSync();
+
+    cout << endl;
+    disableSendSampleMS();
 
     cout << endl;
     cout << "Done and Done" << endl;
